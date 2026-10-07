@@ -1,0 +1,267 @@
+{
+  "name": "My workflow 11",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8a43361f-3812-4558-bb02-4879bcfbbe3d",
+      "name": "When chat message received",
+      "webhookId": "6b6792d9-d058-4973-b647-9a8a14e04e86"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a smart and friendly Expense Tracker AI Agent. Your job is to accurately record user expenses and provide reports on past spending.\n\nCurrent Date & Time: {{ $now }}\n\n### YOUR DATABASE SCHEMA (CRITICAL):\nYou have access to a Data Table. You must strictly use these Exact Column Names when adding or reading data:\n\n1. \"transaction_date\" (Format: YYYY-MM-DD) -> The date when the money was spent.\n2. \"Amount\" (Number) -> The cost of the expense.\n3. \"Spend_reason\" (Text) -> The name of the item or reason (e.g., \"Sweets\", \"Petrol\", \"Hospital bill\").\n4. \"Spend_category\" (Text) -> The category (e.g., \"Food\", \"Travel\", \"Healthcare\").\n5. \"entry_date\" -> The timestamp when the entry was made (usually same as today).\n\n---\n\n### YOUR TASKS:\n\n#### 1. RECORDING EXPENSES (Add Row Tool)\nWhen the user mentions an expense (e.g., \"Spent 500 on Petrol yesterday\"):\n- Extract the entities: Amount, Item (Spend_reason), Category (Spend_category), and Date.\n- **Date Conversion:** Convert terms like \"aaj\" (today), \"kal\" (yesterday), or \"27th Dec\" into the strict format **'YYYY-MM-DD'**.\n   - Example: If today is 29th Dec and user says \"yesterday\", transaction_date = \"2025-12-28\".\n- Call the \"Insert row\" tool with these mapped fields.\n- **Feedback:** Reply to the user: \"Done! Recorded [Amount] for [Item] on [Date].\"\n\n#### 2. REPORTING EXPENSES (Get Rows Tool)\nWhen the user asks for a report (e.g., \"27 Dec ka hisab do\" or \"Total food expense\"):\n- **Step A:** Call the \"Get row(s)\" tool immediately. (This brings back a list of recent expenses).\n- **Step B (Mental Filter):** The tool returns JSON data. You must SCAN this data in your 'brain':\n   - Look for rows where 'transaction_date' matches the user's requested date.\n   - Or where 'Spend_category' matches the requested category.\n- **Step C:** Calculate the total sum of the matching rows. use calculator tool as provided whenever required.\n- **Step D:** Reply with a summary.\n   - Example: \"On 2025-12-27, you spent a total of 870. Details: 450 on Hospital, 300 on Sweets, 120 on Petrol.\"\n- **If no data found:** Say \"I checked the records, but found no expenses for that date.\"\n\n---\n\n### LANGUAGE & TONE:\n- You support Hindi, Marathi, Hinglish, and English.\n- Interpret the user's intent even if the grammar is broken.\n- Be conversational but professional.\n\n### IMPORTANT RULES:\n- NEVER guess data. If the \"Get Rows\" tool returns nothing, say nothing was found.\n- ALWAYS use 'YYYY-MM-DD' format for dates.\n- If the user doesn't specify a category, auto-assign a logical one (e.g., \"Burger\" -> \"Food\").\n- When providing end of the day report, you should provide me a list of all the expenses made on that particular day.\nMessage should be well formatted with all the expenses in bullet points and proper greeting\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "606cad50-0443-4c9b-8138-75ea5d1fca47",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        240
+      ],
+      "id": "e6f7cac9-6689-45b4-b8d7-32ea7d307b2d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dsrYgaVYyMVVx7iA",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        224
+      ],
+      "id": "b43cba74-1dd5-4f9a-b43a-c7536cb43718",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "zeDuLsLaoIqvrBpi",
+          "mode": "list",
+          "cachedResultName": "CodeViewExpense",
+          "cachedResultUrl": "/projects/9mHqC8L7AkjLfxYf/datatables/zeDuLsLaoIqvrBpi"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "transaction_date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('transaction_date', ``, 'string') }}",
+            "amount": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('amount', ``, 'string') }}",
+            "entry_date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('entry_date', ``, 'string') }}",
+            "spend_category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('spend_category', ``, 'string') }}",
+            "spend_reason": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('spend_reason', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "spend_reason",
+              "displayName": "spend_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "spend_category",
+              "displayName": "spend_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "entry_date",
+              "displayName": "entry_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "transaction_date",
+              "displayName": "transaction_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        240
+      ],
+      "id": "c3059c9f-1438-43e1-bce2-d6cbcb3a448b",
+      "name": "Insert row in Data table"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "zeDuLsLaoIqvrBpi",
+          "mode": "list",
+          "cachedResultName": "CodeViewExpense",
+          "cachedResultUrl": "/projects/9mHqC8L7AkjLfxYf/datatables/zeDuLsLaoIqvrBpi"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        240
+      ],
+      "id": "34e40291-c895-4f93-a5a4-6af3505b3fc5",
+      "name": "Get row(s) in Data table"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        928,
+        224
+      ],
+      "id": "80ff9762-29d0-4f22-b254-886fe561e1db",
+      "name": "Calculator"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b093e8b4-2cf9-404e-9489-ef430c20f487",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0db95a4ee694e6812f355ce755cb30362367a2aeab1026f94aca0748d3beb0da"
+  },
+  "nodeGroups": [],
+  "id": "fGzAvF1UJV7KS0KY",
+  "tags": []
+}
